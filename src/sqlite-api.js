@@ -58,11 +58,11 @@ export function Factory(Module) {
    * @param {number} hi32 
    * @returns {number|bigint}
    */
-  const cvt32x2AsSafe = (function() {
+  const cvt32x2AsSafe = (function () {
     const hiMax = BigInt(Number.MAX_SAFE_INTEGER) >> 32n;
     const hiMin = BigInt(Number.MIN_SAFE_INTEGER) >> 32n;
 
-    return function(lo32, hi32) {
+    return function (lo32, hi32) {
       if (hi32 > hiMax || hi32 < hiMin) {
         // Can't be expressed as a Number so use BigInt.
         return cvt32x2ToBigInt(lo32, hi32);
@@ -89,7 +89,7 @@ export function Factory(Module) {
     }
   }
 
-  sqlite3.bind_collection = function(stmt, bindings) {
+  sqlite3.bind_collection = function (stmt, bindings) {
     verifyStatement(stmt);
     const isArray = Array.isArray(bindings);
     const nBindings = sqlite3.bind_parameter_count(stmt);
@@ -103,7 +103,7 @@ export function Factory(Module) {
     return SQLite.SQLITE_OK;
   };
 
-  sqlite3.bind = function(stmt, i, value) {
+  sqlite3.bind = function (stmt, i, value) {
     verifyStatement(stmt);
     switch (typeof value) {
       case 'number':
@@ -131,10 +131,10 @@ export function Factory(Module) {
     }
   };
 
-  sqlite3.bind_blob = (function() {
+  sqlite3.bind_blob = (function () {
     const fname = 'sqlite3_bind_blob';
     const f = Module.cwrap(fname, ...decl('nnnnn:n'));
-    return function(stmt, i, value) {
+    return function (stmt, i, value) {
       verifyStatement(stmt);
       // @ts-ignore
       const byteLength = value.byteLength ?? value.length;
@@ -146,10 +146,10 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.bind_parameter_count = (function() {
+  sqlite3.bind_parameter_count = (function () {
     const fname = 'sqlite3_bind_parameter_count';
     const f = Module.cwrap(fname, ...decl('n:n'));
-    return function(stmt) {
+    return function (stmt) {
       verifyStatement(stmt);
       const result = f(stmt);
       // trace(fname, result);
@@ -157,10 +157,10 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.bind_double = (function() {
+  sqlite3.bind_double = (function () {
     const fname = 'sqlite3_bind_double';
     const f = Module.cwrap(fname, ...decl('nnn:n'));
-    return function(stmt, i, value) {
+    return function (stmt, i, value) {
       verifyStatement(stmt);
       const result = f(stmt, i, value);
       // trace(fname, result);
@@ -168,10 +168,10 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.bind_int = (function() {
+  sqlite3.bind_int = (function () {
     const fname = 'sqlite3_bind_int';
     const f = Module.cwrap(fname, ...decl('nnn:n'));
-    return function(stmt, i, value) {
+    return function (stmt, i, value) {
       verifyStatement(stmt);
       if (value > 0x7fffffff || value < -0x80000000) return SQLite.SQLITE_RANGE;
 
@@ -181,10 +181,10 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.bind_int64 = (function() {
+  sqlite3.bind_int64 = (function () {
     const fname = 'sqlite3_bind_int64';
     const f = Module.cwrap(fname, ...decl('nnnn:n'));
-    return function(stmt, i, value) {
+    return function (stmt, i, value) {
       verifyStatement(stmt);
       if (value > MAX_INT64 || value < MIN_INT64) return SQLite.SQLITE_RANGE;
 
@@ -196,10 +196,10 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.bind_null = (function() {
+  sqlite3.bind_null = (function () {
     const fname = 'sqlite3_bind_null';
     const f = Module.cwrap(fname, ...decl('nn:n'));
-    return function(stmt, i) {
+    return function (stmt, i) {
       verifyStatement(stmt);
       const result = f(stmt, i);
       // trace(fname, result);
@@ -207,10 +207,10 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.bind_parameter_name = (function() {
+  sqlite3.bind_parameter_name = (function () {
     const fname = 'sqlite3_bind_parameter_name';
     const f = Module.cwrap(fname, ...decl('n:s'));
-    return function(stmt, i) {
+    return function (stmt, i) {
       verifyStatement(stmt);
       const result = f(stmt, i);
       // trace(fname, result);
@@ -218,10 +218,10 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.bind_text = (function() {
+  sqlite3.bind_text = (function () {
     const fname = 'sqlite3_bind_text';
     const f = Module.cwrap(fname, ...decl('nnnnn:n'));
-    return function(stmt, i, value) {
+    return function (stmt, i, value) {
       verifyStatement(stmt);
       const ptr = createUTF8(value);
       const result = f(stmt, i, ptr, -1, sqliteFreeAddress);
@@ -230,10 +230,10 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.changes = (function() {
+  sqlite3.changes = (function () {
     const fname = 'sqlite3_changes';
     const f = Module.cwrap(fname, ...decl('n:n'));
-    return function(db) {
+    return function (db) {
       verifyDatabase(db);
       const result = f(db);
       // trace(fname, result);
@@ -241,10 +241,10 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.close = (function() {
+  sqlite3.close = (function () {
     const fname = 'sqlite3_close';
     const f = Module.cwrap(fname, ...decl('n:n'), { async });
-    return async function(db) {
+    return async function (db) {
       verifyDatabase(db);
       const result = await f(db);
       databases.delete(db);
@@ -252,7 +252,7 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.column = function(stmt, iCol) {
+  sqlite3.column = function (stmt, iCol) {
     verifyStatement(stmt);
     const type = sqlite3.column_type(stmt, iCol);
     switch (type) {
@@ -273,10 +273,10 @@ export function Factory(Module) {
     }
   };
 
-  sqlite3.column_blob = (function() {
+  sqlite3.column_blob = (function () {
     const fname = 'sqlite3_column_blob';
     const f = Module.cwrap(fname, ...decl('nn:n'));
-    return function(stmt, iCol) {
+    return function (stmt, iCol) {
       verifyStatement(stmt);
       const nBytes = sqlite3.column_bytes(stmt, iCol);
       const address = f(stmt, iCol);
@@ -286,10 +286,10 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.column_bytes = (function() {
+  sqlite3.column_bytes = (function () {
     const fname = 'sqlite3_column_bytes';
     const f = Module.cwrap(fname, ...decl('nn:n'));
-    return function(stmt, iCol) {
+    return function (stmt, iCol) {
       verifyStatement(stmt);
       const result = f(stmt, iCol);
       // trace(fname, result);
@@ -297,10 +297,10 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.column_count = (function() {
+  sqlite3.column_count = (function () {
     const fname = 'sqlite3_column_count';
     const f = Module.cwrap(fname, ...decl('n:n'));
-    return function(stmt) {
+    return function (stmt) {
       verifyStatement(stmt);
       const result = f(stmt);
       // trace(fname, result);
@@ -308,10 +308,10 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.column_double = (function() {
+  sqlite3.column_double = (function () {
     const fname = 'sqlite3_column_double';
     const f = Module.cwrap(fname, ...decl('nn:n'));
-    return function(stmt, iCol) {
+    return function (stmt, iCol) {
       verifyStatement(stmt);
       const result = f(stmt, iCol);
       // trace(fname, result);
@@ -319,12 +319,12 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.column_int = (function() {
+  sqlite3.column_int = (function () {
     // Retrieve int64 but use only the lower 32 bits. The upper 32-bits are
     // accessible with Module.getTempRet0().
     const fname = 'sqlite3_column_int64';
     const f = Module.cwrap(fname, ...decl('nn:n'));
-    return function(stmt, iCol) {
+    return function (stmt, iCol) {
       verifyStatement(stmt);
       const result = f(stmt, iCol);
       // trace(fname, result);
@@ -332,10 +332,10 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.column_int64 = (function() {
+  sqlite3.column_int64 = (function () {
     const fname = 'sqlite3_column_int64';
     const f = Module.cwrap(fname, ...decl('nn:n'));
-    return function(stmt, iCol) {
+    return function (stmt, iCol) {
       verifyStatement(stmt);
       const lo32 = f(stmt, iCol);
       const hi32 = Module.getTempRet0();
@@ -345,10 +345,10 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.column_name = (function() {
+  sqlite3.column_name = (function () {
     const fname = 'sqlite3_column_name';
     const f = Module.cwrap(fname, ...decl('nn:s'));
-    return function(stmt, iCol) {
+    return function (stmt, iCol) {
       verifyStatement(stmt);
       const result = f(stmt, iCol);
       // trace(fname, result);
@@ -356,7 +356,7 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.column_names = function(stmt) {
+  sqlite3.column_names = function (stmt) {
     const columns = [];
     const nColumns = sqlite3.column_count(stmt);
     for (let i = 0; i < nColumns; ++i) {
@@ -365,10 +365,10 @@ export function Factory(Module) {
     return columns;
   };
 
-  sqlite3.column_text = (function() {
+  sqlite3.column_text = (function () {
     const fname = 'sqlite3_column_text';
     const f = Module.cwrap(fname, ...decl('nn:s'));
-    return function(stmt, iCol) {
+    return function (stmt, iCol) {
       verifyStatement(stmt);
       const result = f(stmt, iCol);
       // trace(fname, result);
@@ -376,10 +376,10 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.column_type = (function() {
+  sqlite3.column_type = (function () {
     const fname = 'sqlite3_column_type';
     const f = Module.cwrap(fname, ...decl('nn:n'));
-    return function(stmt, iCol) {
+    return function (stmt, iCol) {
       verifyStatement(stmt);
       const result = f(stmt, iCol);
       // trace(fname, result);
@@ -387,7 +387,7 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.create_function = function(db, zFunctionName, nArg, eTextRep, pApp, xFunc, xStep, xFinal) {
+  sqlite3.create_function = function (db, zFunctionName, nArg, eTextRep, pApp, xFunc, xStep, xFinal) {
     verifyDatabase(db);
     if (xFunc && !xStep && !xFinal) {
       const result = Module.createFunction(db, zFunctionName, nArg, eTextRep, pApp, xFunc);
@@ -402,16 +402,16 @@ export function Factory(Module) {
     throw new SQLiteError('invalid function combination', SQLite.SQLITE_MISUSE);
   };
 
-  sqlite3.create_module = function(db, zName, module, appData) {
+  sqlite3.create_module = function (db, zName, module, appData) {
     verifyDatabase(db);
     const result = Module.createModule(db, zName, module, appData);
     return check('sqlite3_create_module', result, db);
   };
 
-  sqlite3.data_count = (function() {
+  sqlite3.data_count = (function () {
     const fname = 'sqlite3_data_count';
     const f = Module.cwrap(fname, ...decl('n:n'));
-    return function(stmt) {
+    return function (stmt) {
       verifyStatement(stmt);
       const result = f(stmt);
       // trace(fname, result);
@@ -419,16 +419,16 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.declare_vtab = (function() {
+  sqlite3.declare_vtab = (function () {
     const fname = 'sqlite3_declare_vtab';
     const f = Module.cwrap(fname, ...decl('ns:n'));
-    return function(pVTab, zSQL) {
+    return function (pVTab, zSQL) {
       const result = f(pVTab, zSQL);
       return check('sqlite3_declare_vtab', result);
     }
   })();
-    
-  sqlite3.exec = async function(db, sql, callback) {
+
+  sqlite3.exec = async function (db, sql, callback) {
     for await (const stmt of sqlite3.statements(db, sql)) {
       let columns;
       while (await sqlite3.step(stmt) === SQLite.SQLITE_ROW) {
@@ -442,10 +442,68 @@ export function Factory(Module) {
     return SQLite.SQLITE_OK;
   };
 
-  sqlite3.finalize = (function() {
+  sqlite3.run = async function (db, sql, params) {
+    for await (const stmt of sqlite3.statements(db, sql)) {
+      if (params) {
+        sqlite3.bind_collection(stmt, params)
+      }
+      await sqlite3.step(stmt)
+    }
+    return SQLite.SQLITE_OK;
+  };
+
+  sqlite3.execWithParams = async function (db, sql, params) {
+    let columns = [];
+    const rows = []
+    for await (const stmt of sqlite3.statements(db, sql)) {
+      if (params) {
+        sqlite3.bind_collection(stmt, params)
+      }
+      while (await sqlite3.step(stmt) === SQLite.SQLITE_ROW) {
+        columns = columns.length === 0 ? sqlite3.column_names(stmt) : columns;
+        const row = sqlite3.row(stmt);
+        rows.push(row)
+        // await callback(row, columns);
+      }
+    }
+    return {
+      rows: rows,
+      columns: columns
+    }
+  };
+
+  sqlite3.executeBatch = async function (db, sqlQueries, params) {
+    try {
+      await sqlite3.run(db, `BEGIN EXCLUSIVE TRANSACTION`, null)
+      for (let i = 0; i < sqlQueries.length; i++) {
+        const bindParams = params ? params[i] : null;
+        let stmt;
+        const str = sqlite3.str_new(db, sqlQueries[i]);
+        try {
+          const sqlPointer = sqlite3.str_value(str)
+          stmt = await sqlite3.prepare_v2(db, sqlPointer)
+          if (bindParams) {
+            sqlite3.bind_collection(stmt.stmt, bindParams)
+          }
+          await sqlite3.step(stmt.stmt)
+        } finally {
+          if (stmt?.stmt) {
+            sqlite3.finalize(stmt.stmt);
+          }
+          sqlite3.str_finish(str);
+        }
+      }
+      await sqlite3.run(db, `COMMIT`, null)
+      return SQLite.SQLITE_OK;
+    } catch (error) {
+      await sqlite3.run(db, `ROLLBACK`, null)
+    }
+  };
+
+  sqlite3.finalize = (function () {
     const fname = 'sqlite3_finalize';
     const f = Module.cwrap(fname, ...decl('n:n'), { async });
-    return async function(stmt) {
+    return async function (stmt) {
       if (!mapStmtToDB.has(stmt)) {
         return SQLite.SQLITE_MISUSE;
       }
@@ -460,46 +518,46 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.get_autocommit = (function() {
+  sqlite3.get_autocommit = (function () {
     const fname = 'sqlite3_get_autocommit';
     const f = Module.cwrap(fname, ...decl('n:n'));
-    return function(db) {
+    return function (db) {
       const result = f(db);
       return result;
     };
   })();
 
-  sqlite3.libversion = (function() {
+  sqlite3.libversion = (function () {
     const fname = 'sqlite3_libversion';
     const f = Module.cwrap(fname, ...decl(':s'));
-    return function() {
+    return function () {
       const result = f();
       return result;
     };
   })();
 
-  sqlite3.libversion_number = (function() {
+  sqlite3.libversion_number = (function () {
     const fname = 'sqlite3_libversion_number';
     const f = Module.cwrap(fname, ...decl(':n'));
-    return function() {
+    return function () {
       const result = f();
       return result;
     };
   })();
 
-  sqlite3.limit = (function() {
+  sqlite3.limit = (function () {
     const fname = 'sqlite3_limit';
     const f = Module.cwrap(fname, ...decl('nnn:n'));
-    return function(db, id, newVal) {
+    return function (db, id, newVal) {
       const result = f(db, id, newVal);
       return result;
     };
   })();
 
-  sqlite3.open_v2 = (function() {
+  sqlite3.open_v2 = (function () {
     const fname = 'sqlite3_open_v2';
     const f = Module.cwrap(fname, ...decl('snnn:n'), { async });
-    return async function(zFilename, flags, zVfs) {
+    return async function (zFilename, flags, zVfs) {
       flags = flags || SQLite.SQLITE_OPEN_CREATE | SQLite.SQLITE_OPEN_READWRITE;
       zVfs = createUTF8(zVfs);
       const result = await f(zFilename, tmpPtr[0], flags, zVfs);
@@ -514,10 +572,10 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.prepare_v2 = (function() {
+  sqlite3.prepare_v2 = (function () {
     const fname = 'sqlite3_prepare_v2';
     const f = Module.cwrap(fname, ...decl('nnnnn:n'), { async });
-    return async function(db, sql) {
+    return async function (db, sql) {
       const result = await f(db, sql, -1, tmpPtr[0], tmpPtr[1]);
       check(fname, result, db);
 
@@ -530,22 +588,22 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.progress_handler = function(db, nProgressOps, handler, userData) {
+  sqlite3.progress_handler = function (db, nProgressOps, handler, userData) {
     verifyDatabase(db);
     Module.progressHandler(db, nProgressOps, handler, userData);
   };;
 
-  sqlite3.reset = (function() {
+  sqlite3.reset = (function () {
     const fname = 'sqlite3_reset';
     const f = Module.cwrap(fname, ...decl('n:n'), { async });
-    return async function(stmt) {
+    return async function (stmt) {
       verifyStatement(stmt);
       const result = await f(stmt);
       return check(fname, result, mapStmtToDB.get(stmt));
     };
   })();
 
-  sqlite3.result = function(context, value) {
+  sqlite3.result = function (context, value) {
     switch (typeof value) {
       case 'number':
         if (value === (value | 0)) {
@@ -573,10 +631,10 @@ export function Factory(Module) {
 
   };
 
-  sqlite3.result_blob = (function() {
+  sqlite3.result_blob = (function () {
     const fname = 'sqlite3_result_blob';
     const f = Module.cwrap(fname, ...decl('nnnn:n'));
-    return function(context, value) {
+    return function (context, value) {
       // @ts-ignore
       const byteLength = value.byteLength ?? value.length;
       const ptr = Module._sqlite3_malloc(byteLength);
@@ -585,26 +643,26 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.result_double = (function() {
+  sqlite3.result_double = (function () {
     const fname = 'sqlite3_result_double';
     const f = Module.cwrap(fname, ...decl('nn:n'));
-    return function(context, value) {
+    return function (context, value) {
       f(context, value); // void return
     };
   })();
 
-  sqlite3.result_int = (function() {
+  sqlite3.result_int = (function () {
     const fname = 'sqlite3_result_int';
     const f = Module.cwrap(fname, ...decl('nn:n'));
-    return function(context, value) {
+    return function (context, value) {
       f(context, value); // void return
     };
   })();
 
-  sqlite3.result_int64 = (function() {
+  sqlite3.result_int64 = (function () {
     const fname = 'sqlite3_result_int64';
     const f = Module.cwrap(fname, ...decl('nnn:n'));
-    return function(context, value) {
+    return function (context, value) {
       if (value > MAX_INT64 || value < MIN_INT64) return SQLite.SQLITE_RANGE;
 
       const lo32 = value & 0xffffffffn;
@@ -613,24 +671,24 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.result_null = (function() {
+  sqlite3.result_null = (function () {
     const fname = 'sqlite3_result_null';
     const f = Module.cwrap(fname, ...decl('n:n'));
-    return function(context) {
+    return function (context) {
       f(context); // void return
     };
   })();
 
-  sqlite3.result_text = (function() {
+  sqlite3.result_text = (function () {
     const fname = 'sqlite3_result_text';
     const f = Module.cwrap(fname, ...decl('nnnn:n'));
-    return function(context, value) {
+    return function (context, value) {
       const ptr = createUTF8(value);
       f(context, ptr, -1, sqliteFreeAddress); // void return
     };
   })();
 
-  sqlite3.row = function(stmt) {
+  sqlite3.row = function (stmt) {
     const row = [];
     const nColumns = sqlite3.data_count(stmt);
     for (let i = 0; i < nColumns; ++i) {
@@ -644,16 +702,16 @@ export function Factory(Module) {
     return row;
   };
 
-  sqlite3.set_authorizer = function(db, authFunction, userData) {
+  sqlite3.set_authorizer = function (db, authFunction, userData) {
     verifyDatabase(db);
     const result = Module.setAuthorizer(db, authFunction, userData);
     return check('sqlite3_set_authorizer', result, db);
   };;
-  
-  sqlite3.sql = (function() {
+
+  sqlite3.sql = (function () {
     const fname = 'sqlite3_sql';
     const f = Module.cwrap(fname, ...decl('n:s'));
-    return function(stmt) {
+    return function (stmt) {
       verifyStatement(stmt);
       const result = f(stmt);
       // trace(fname, result);
@@ -661,8 +719,8 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.statements = function(db, sql) {
-    return (async function*() {
+  sqlite3.statements = function (db, sql) {
+    return (async function* () {
       const str = sqlite3.str_new(db, sql);
       let prepared = { stmt: null, sql: sqlite3.str_value(str) };
       try {
@@ -681,10 +739,10 @@ export function Factory(Module) {
     })();
   };
 
-  sqlite3.step = (function() {
+  sqlite3.step = (function () {
     const fname = 'sqlite3_step';
     const f = Module.cwrap(fname, ...decl('n:n'), { async });
-    return async function(stmt) {
+    return async function (stmt) {
       verifyStatement(stmt);
       const result = await f(stmt);
       return check(fname, result, mapStmtToDB.get(stmt), [SQLite.SQLITE_ROW, SQLite.SQLITE_DONE]);
@@ -698,7 +756,7 @@ export function Factory(Module) {
   let stringId = 0;
   const strings = new Map();
 
-  sqlite3.str_new = function(db, s = '') {
+  sqlite3.str_new = function (db, s = '') {
     const sBytes = Module.lengthBytesUTF8(s);
     const str = stringId++ & 0xffffffff;
     const data = {
@@ -710,7 +768,7 @@ export function Factory(Module) {
     return str;
   };
 
-  sqlite3.str_appendall = function(str, s) {
+  sqlite3.str_appendall = function (str, s) {
     if (!strings.has(str)) {
       throw new SQLiteError('not a string', SQLite.SQLITE_MISUSE);
     }
@@ -729,7 +787,7 @@ export function Factory(Module) {
     strings.set(str, data);
   };
 
-  sqlite3.str_finish = function(str) {
+  sqlite3.str_finish = function (str) {
     if (!strings.has(str)) {
       throw new SQLiteError('not a string', SQLite.SQLITE_MISUSE);
     }
@@ -738,18 +796,24 @@ export function Factory(Module) {
     Module._sqlite3_free(data.offset);
   };
 
-  sqlite3.str_value = function(str) {
+  sqlite3.str_value = function (str) {
     if (!strings.has(str)) {
       throw new SQLiteError('not a string', SQLite.SQLITE_MISUSE);
     }
     return strings.get(str).offset;
   };
 
-  sqlite3.user_data = function(context) {
+  sqlite3.update_hook = function (db, xUpdate) {
+    verifyDatabase(db);
+    Module.updateHook(db, xUpdate);
+    return SQLite.SQLITE_OK;
+  }
+
+  sqlite3.user_data = function (context) {
     return Module.getFunctionUserData(context);
   };
 
-  sqlite3.value = function(pValue) {
+  sqlite3.value = function (pValue) {
     const type = sqlite3.value_type(pValue);
     switch (type) {
       case SQLite.SQLITE_BLOB:
@@ -769,10 +833,10 @@ export function Factory(Module) {
     }
   };
 
-  sqlite3.value_blob = (function() {
+  sqlite3.value_blob = (function () {
     const fname = 'sqlite3_value_blob';
     const f = Module.cwrap(fname, ...decl('n:n'));
-    return function(pValue) {
+    return function (pValue) {
       const nBytes = sqlite3.value_bytes(pValue);
       const address = f(pValue);
       const result = Module.HEAPU8.subarray(address, address + nBytes);
@@ -781,40 +845,40 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.value_bytes = (function() {
+  sqlite3.value_bytes = (function () {
     const fname = 'sqlite3_value_bytes';
     const f = Module.cwrap(fname, ...decl('n:n'));
-    return function(pValue) {
+    return function (pValue) {
       const result = f(pValue);
       // trace(fname, result);
       return result;
     };
   })();
 
-  sqlite3.value_double = (function() {
+  sqlite3.value_double = (function () {
     const fname = 'sqlite3_value_double';
     const f = Module.cwrap(fname, ...decl('n:n'));
-    return function(pValue) {
+    return function (pValue) {
       const result = f(pValue);
       // trace(fname, result);
       return result;
     };
   })();
 
-  sqlite3.value_int = (function() {
+  sqlite3.value_int = (function () {
     const fname = 'sqlite3_value_int64';
     const f = Module.cwrap(fname, ...decl('n:n'));
-    return function(pValue) {
+    return function (pValue) {
       const result = f(pValue);
       // trace(fname, result);
       return result;
     };
   })();
 
-  sqlite3.value_int64 = (function() {
+  sqlite3.value_int64 = (function () {
     const fname = 'sqlite3_value_int64';
     const f = Module.cwrap(fname, ...decl('n:n'));
-    return function(pValue) {
+    return function (pValue) {
       const lo32 = f(pValue);
       const hi32 = Module.getTempRet0();
       const result = cvt32x2ToBigInt(lo32, hi32);
@@ -823,27 +887,27 @@ export function Factory(Module) {
     };
   })();
 
-  sqlite3.value_text = (function() {
+  sqlite3.value_text = (function () {
     const fname = 'sqlite3_value_text';
     const f = Module.cwrap(fname, ...decl('n:s'));
-    return function(pValue) {
+    return function (pValue) {
       const result = f(pValue);
       // trace(fname, result);
       return result;
     };
   })();
 
-  sqlite3.value_type = (function() {
+  sqlite3.value_type = (function () {
     const fname = 'sqlite3_value_type';
     const f = Module.cwrap(fname, ...decl('n:n'));
-    return function(pValue) {
+    return function (pValue) {
       const result = f(pValue);
       // trace(fname, result);
       return result;
     };
   })();
 
-  sqlite3.vfs_register = function(vfs, makeDefault) {
+  sqlite3.vfs_register = function (vfs, makeDefault) {
     const result = Module.registerVFS(vfs, makeDefault);
     return check('sqlite3_vfs_register', result);
   };

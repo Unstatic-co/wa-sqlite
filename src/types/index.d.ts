@@ -648,7 +648,55 @@ declare interface SQLiteAPI {
     zSQL: string,
     callback?: (row: Array<SQLiteCompatibleType|null>, columns: string[]) => void
   ): Promise<number>;
+  
+  /**
+   * One-step query execution interface
+   * 
+   * The implementation of this function uses {@link row}, which makes a
+   * copy of blobs and returns BigInt for integers outside the safe integer
+   * bounds for Number.
+   * @see https://www.sqlite.org/c3ref/exec.html
+   * @param db database pointer
+   * @param zSQL queries
+   * @params params query parameters
+   * @returns Promise resolving to query results (rejects on error)
+   */
 
+  execWithParams(
+    db: number,
+    zSQL: string,
+    params?: SQLiteCompatibleType[]
+  ): Promise<{
+    rows: any[][],
+    columns: string[]
+  }>;
+  /**
+   * execute batch sql
+   * @param db database pointer
+   * @param sqlQueries queries
+   * @param params queries parameters
+   * @returns Promise resolving to `SQLITE_OK` (rejects on error)
+   */
+  executeBatch(db:number, sqlQueries: string[],params?: SQLiteCompatibleType[][]): Promise<number>;
+
+  /**
+   * One-step query execution interface
+   * 
+   * The implementation of this function uses {@link row}, which makes a
+   * copy of blobs and returns BigInt for integers outside the safe integer
+   * bounds for Number.
+   * @see https://www.sqlite.org/c3ref/exec.html
+   * @param db database pointer
+   * @param zSQL queries
+   * @params params query parameters
+   * @returns Promise resolving to `SQLITE_OK` (rejects on error)
+   */
+
+  run(
+    db: number,
+    zSQL: string,
+    params?: SQLiteCompatibleType[]
+  ): Promise<number>;
   /**
    * Destroy a prepared statement object compiled with {@link prepare_v2}
    * 
@@ -958,6 +1006,26 @@ declare interface SQLiteAPI {
    * @param str `sqlite3_str` pointer
    */
   str_finish(str: number): void;
+
+  /**
+   * Install an update hook on the SQLite connection.
+   * @see https://www.sqlite.org/c3ref/update_hook.html
+   *
+   * updateType is one of:
+   * - SQLITE_DELETE: 9
+   * - SQLITE_INSERT: 18
+   * - SQLITE_UPDATE: 23
+   * @see https://www.sqlite.org/c3ref/c_alter_table.html
+   */
+  update_hook(
+    db: number,
+    xUpdate: (
+      updateType: 9 | 18 | 23,
+      dbName: string,
+      tblName: string,
+      rowid: bigint
+    ) => void
+  ): void;
 
   /**
    * Get application data in custom function implementation
