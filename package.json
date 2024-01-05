@@ -1,5 +1,5 @@
 {
-  "name": "wa-sqlite",
+  "name": "wa-sqlite-db",
   "version": "1.0.0",
   "type": "module",
   "main": "src/sqlite-api.js",
@@ -42,5 +42,9 @@
     "sinon@15.0.1": {
       "unplugged": true
     }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   }
 }
