@@ -2,8 +2,9 @@ import { getSQLite, getSQLiteAsync } from './api-instances.js';
 import * as SQLite from '../src/sqlite-api.js';
 import sinon from '../.yarn/unplugged/sinon-npm-15.0.1-115ae39e4c/node_modules/sinon/pkg/sinon-esm.js';
 
+
 const LIBVERSION = '3.44.0';
-const LIBVERSION_NUMBER = (function() {
+const LIBVERSION_NUMBER = (function () {
   const version = LIBVERSION.split('.');
   return parseInt(version[0] + version[1].padStart(3, '0') + version[2].padStart(3, '0'));
 })();
@@ -12,7 +13,7 @@ const LIBVERSION_NUMBER = (function() {
 function shared(sqlite3Ready) {
   /** @type {SQLiteAPI} */ let sqlite3;
   let db;
-  beforeEach(async function() {
+  beforeEach(async function () {
     sqlite3 = await sqlite3Ready;
     db = await sqlite3.open_v2('foo');
 
@@ -28,12 +29,12 @@ function shared(sqlite3Ready) {
     }
   });
 
-  afterEach(async function() {
+  afterEach(async function () {
     await sqlite3.close(db);
     sinon.restore();
   });
 
-  it('version', async function() {
+  it('version', async function () {
     const sVersion = sqlite3.libversion();
     expect(sVersion).toBe(LIBVERSION);
 
@@ -41,7 +42,7 @@ function shared(sqlite3Ready) {
     expect(nVersion).toBe(LIBVERSION_NUMBER);
   });
 
-  it('prepare', async function() {
+  it('prepare', async function () {
     const str = sqlite3.str_new(db);
     sqlite3.str_appendall(str, 'SELECT 1 + 1');
     const prepared = await sqlite3.prepare_v2(db, sqlite3.str_value(str));
@@ -52,7 +53,7 @@ function shared(sqlite3Ready) {
     sqlite3.str_finish(str);
   });
 
-  it('bind', async function() {
+  it('bind', async function () {
     await sqlite3.exec(db, `
       CREATE TABLE tbl (id, cBlob, cDouble, cInt, cNull, cText);
     `);
@@ -102,7 +103,7 @@ function shared(sqlite3Ready) {
       db, `
         SELECT cBlob, cDouble, cInt, cNull, cText FROM tbl;
       `,
-      function(rowData, columnNames) {
+      function (rowData, columnNames) {
         rowData = rowData.map(value => {
           // Blob results do not remain valid so copy to retain.
           return value instanceof Uint8Array ? Array.from(value) : value;
@@ -115,7 +116,7 @@ function shared(sqlite3Ready) {
     expect(results[1]).toEqual(expected);
   });
 
-  it('exec', async function() {
+  it('exec', async function () {
     // Without callback.
     await sqlite3.exec(
       db, `
@@ -133,7 +134,7 @@ function shared(sqlite3Ready) {
       SELECT * FROM tableA;
       SELECT * FROM tableB;
       `,
-      function(row, columns) {
+      function (row, columns) {
         switch (columns.length) {
           case 2:
             expect(columns).toEqual(['x', 'y']);
@@ -148,14 +149,44 @@ function shared(sqlite3Ready) {
         rows.push(row);
       });
 
-      expect(rows).toEqual([
-        [1, 2],
-        ['foo', 'bar', 'baz'],
-        ['how', 'now', 'brown']
-      ]);
+    expect(rows).toEqual([
+      [1, 2],
+      ['foo', 'bar', 'baz'],
+      ['how', 'now', 'brown']
+    ]);
   });
 
-  it('reset', async function() {
+  it('execWithParams', async function () {
+    await sqlite3.exec(
+      db, `
+      CREATE TABLE tableX (x, y);
+      INSERT INTO tableX VALUES (1, 2);
+    `);
+    const queryResult = await sqlite3.execWithParams(db, `SELECT * FROM tableX WHERE x=?`, [1])
+    expect(queryResult.columns.length).toBe(2)
+    expect(queryResult.rows.length).toBe(1)
+    expect(queryResult.rows[0].length).toBe(2)
+    expect(queryResult.rows[0][0]).toBe(1)
+    expect(queryResult.rows[0][1]).toBe(2)
+  });
+
+  it('executeBatch', async function () {
+    await sqlite3.exec(
+      db, `
+      CREATE TABLE tableX (x, y);
+      INSERT INTO tableX VALUES (1, 2);
+    `);
+    const executeResult = await sqlite3.executeBatch(db, [
+      `INSERT INTO tableX VALUES (2, 3)`,
+      `INSERT INTO tableX VALUES (4, 5)`,
+      `INSERT INTO tableX VALUES (?, ?)`,
+    ], [null, null, [6, 7]])
+    expect(executeResult).toBe(SQLite.SQLITE_OK)
+    const queryResult = await sqlite3.execWithParams(db, `SELECT * FROM tableX`, [])
+    expect(queryResult.rows.length).toBe(4)
+  });
+
+  it('reset', async function () {
     await sqlite3.exec(
       db, `
       CREATE TABLE tbl (x);
@@ -184,7 +215,7 @@ function shared(sqlite3Ready) {
     expect(count).toBe(1);
   });
 
-  it('function', async function() {
+  it('function', async function () {
     // Populate a table with each value type, one value per row.
     await sqlite3.exec(db, `CREATE TABLE tbl (value)`);
     const str = sqlite3.str_new(db, `
@@ -233,7 +264,7 @@ function shared(sqlite3Ready) {
     expect(appData).toBe(0x1234);
   });
 
-  it('aggregate', async function() {
+  it('aggregate', async function () {
     // A real aggregate function would need to manage separate
     // invocations by keying off context but that is unnecessary
     // for this test.
@@ -261,7 +292,7 @@ function shared(sqlite3Ready) {
     expect(result).toBe(10);
   });
 
-  it('authorizer', async function() {
+  it('authorizer', async function () {
     const calls = [];
     function authFunction(userData, iActionCode, param3, param4, param5, param6) {
       calls.push({ userData, iActionCode, param3, param4, param5, param6 });
@@ -297,7 +328,7 @@ function shared(sqlite3Ready) {
     expect(calls.length).toBe(0);
   });
 
-  it('limit', async function() {
+  it('limit', async function () {
     let result;
     result = sqlite3.limit(db, SQLite.SQLITE_LIMIT_SQL_LENGTH, -1);
     expect(result).toBeGreaterThan(64);
@@ -307,7 +338,7 @@ function shared(sqlite3Ready) {
       .toBeRejectedWithError(/too big/);
   });
 
-  it('statements', async function() {
+  it('statements', async function () {
     sinon.spy(sqlite3, 'finalize');
 
     const stmts = [];
@@ -334,7 +365,7 @@ function shared(sqlite3Ready) {
     sqlite3.finalize.restore();
   });
 
-  it('statements break', async function() {
+  it('statements break', async function () {
     sinon.spy(sqlite3, 'finalize');
 
     const stmts = [];
@@ -358,7 +389,7 @@ function shared(sqlite3Ready) {
     sqlite3.finalize.restore();
   });
 
-  it('statements exception', async function() {
+  it('statements exception', async function () {
     sinon.spy(sqlite3, 'finalize');
 
     const stmts = [];
@@ -371,10 +402,10 @@ function shared(sqlite3Ready) {
       for await (const stmt of iterator) {
         stmts.push(stmt);
 
-      // Loop early exit.
-      throw new Error();
+        // Loop early exit.
+        throw new Error();
       }
-    } catch(e) {
+    } catch (e) {
       // Ignore
     }
 
@@ -386,7 +417,7 @@ function shared(sqlite3Ready) {
     sqlite3.finalize.restore();
   });
 
-  it('rollback', async function() {
+  it('rollback', async function () {
     let count;
     await sqlite3.exec(db, `
       CREATE TABLE foo (x);
@@ -412,7 +443,7 @@ function shared(sqlite3Ready) {
     expect(count).toBe(3);
   });
 
-  it('vacuum', async function() {
+  it('vacuum', async function () {
     let sum;
     await sqlite3.exec(db, `
       CREATE TABLE foo (x PRIMARY KEY, y, z);
@@ -432,7 +463,7 @@ function shared(sqlite3Ready) {
     expect(sum).toBe(5 * 6 / 2);
   });
 
-  it('should fetch blob column', async function() {
+  it('should fetch blob column', async function () {
     await sqlite3.exec(
       db, `
       CREATE TABLE t (x);
@@ -441,7 +472,7 @@ function shared(sqlite3Ready) {
 
     // With callback.
     const rows = [];
-    await sqlite3.exec(db, `SELECT * FROM t`, function(row) {
+    await sqlite3.exec(db, `SELECT * FROM t`, function (row) {
       rows.push(row);
     });
 
@@ -451,7 +482,7 @@ function shared(sqlite3Ready) {
     expect(Array.from(rows[3][0])).toEqual([...new Uint8Array([0xde, 0xad, 0xbe, 0xef])]);
   });
 
-  it('should handle 64-bit integer with {bind,column}_int64', async function() {
+  it('should handle 64-bit integer with {bind,column}_int64', async function () {
     /** @type {[string, bigint][]} */
     const entries = [
       ['0', 0n],
@@ -483,7 +514,7 @@ function shared(sqlite3Ready) {
     }
   });
 
-  it('should handle 64-bit integer with {bind,column}', async function() {
+  it('should handle 64-bit integer with {bind,column}', async function () {
     /** @type {[string, bigint][]} */
     const entries = [
       ['0', 0n],
@@ -512,7 +543,7 @@ function shared(sqlite3Ready) {
 
           const upcast = BigInt(result);
           if (upcast >= BigInt(Number.MIN_SAFE_INTEGER) &&
-              upcast <= BigInt(Number.MAX_SAFE_INTEGER)) {
+            upcast <= BigInt(Number.MAX_SAFE_INTEGER)) {
             expect(typeof result).toEqual('number');
           } else {
             expect(typeof result).toEqual('bigint');
@@ -523,7 +554,7 @@ function shared(sqlite3Ready) {
     }
   });
 
-  it('should handle 64-bit integer in custom function', async function() {
+  it('should handle 64-bit integer in custom function', async function () {
     function f_int64(context, values) {
       const value = sqlite3.value_int64(values[0]);
       sqlite3.result_int64(context, value);
@@ -552,15 +583,15 @@ function shared(sqlite3Ready) {
       ['MIN_SAFE_INTEGER', BigInt(Number.MIN_SAFE_INTEGER)],
     ];
     for (const [key, value] of entries) {
-      await sqlite3.exec(db, `SELECT f_int64(${value}), f_generic(${value})`, function(row) {
+      await sqlite3.exec(db, `SELECT f_int64(${value}), f_generic(${value})`, function (row) {
         expect(row[0]).toEqual(row[1]);
-        expect(BigInt(/** @type {bigint|number} */ (row[0]))).toEqual(value);
-        expect(BigInt(/** @type {bigint|number} */ (row[1]))).toEqual(value);
+        expect(BigInt(/** @type {bigint|number} */(row[0]))).toEqual(value);
+        expect(BigInt(/** @type {bigint|number} */(row[1]))).toEqual(value);
       });
     }
   });
 
-  it('get_autocommit', async function() {
+  it('get_autocommit', async function () {
     expect(sqlite3.get_autocommit(db)).toBeTruthy();
 
     await sqlite3.exec(db, 'BEGIN TRANSACTION');
@@ -570,7 +601,7 @@ function shared(sqlite3Ready) {
     expect(sqlite3.get_autocommit(db)).toBeTruthy();
   });
 
-  it('progress_handler', async function() {
+  it('progress_handler', async function () {
     let handlerArg;
     let handlerCount = 0;
     function handler(userData) {
@@ -596,14 +627,43 @@ function shared(sqlite3Ready) {
     `);
     await expectAsync(result).toBeResolved();
   });
+
+  it("update_hook", async function () {
+    const calls = [];
+    function hook(updateType, dbName, tblName, rowid) {
+      calls.push([updateType, dbName, tblName, rowid]);
+    }
+    sqlite3.update_hook(db, hook);
+
+    // insert some rows
+    // last row's row id is max safe integer * 10
+    await sqlite3.exec(
+      db,
+      `
+      CREATE TABLE foo (i integer primary key, x);
+      INSERT INTO foo VALUES (1, 'foo'), (2, 'bar'), (90071992547409910, 'baz');
+    `
+    );
+    expect(calls).toEqual([
+      [18, "main", "foo", 1n],
+      [18, "main", "foo", 2n],
+      [18, "main", "foo", 90071992547409910n],
+    ]);
+    calls.length = 0;
+    await sqlite3.exec(db, `DELETE FROM foo WHERE i = 2`);
+    expect(calls).toEqual([[9, "main", "foo", 2n]]);
+    calls.length = 0;
+    await sqlite3.exec(db, `UPDATE foo SET x = 'bar' WHERE i = 1`);
+    expect(calls).toEqual([[23, "main", "foo", 1n]]);
+  });
 }
 
-describe('sqlite-api', function() {
+describe('sqlite-api', function () {
   const sqlite3Ready = getSQLite();
   shared(sqlite3Ready);
 });
 
-describe('sqlite-api async', function() {
+describe('sqlite-api async', function () {
   const sqlite3Ready = getSQLiteAsync();
   shared(sqlite3Ready);
 });
