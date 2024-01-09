@@ -281,7 +281,7 @@ declare interface SQLiteModule {
  * // 'wa-sqlite-async.mjs' (asynchronous). You should only
  * // use the asynchronous build if you plan to use an
  * // asynchronous VFS or module.
- * import SQLiteESMFactory from 'wa-sqlite/dist/wa-sqlite.mjs';
+ * import SQLiteESMFactory from 'wa-sqlite-db/dist/wa-sqlite.mjs';
  * 
  * // Import the Javascript API wrappers.
  * import * as SQLite from 'wa-sqlite';
@@ -1121,7 +1121,7 @@ declare interface SQLiteAPI {
 }
 
 /** @ignore */
-declare module 'wa-sqlite/src/sqlite-constants.js' {
+declare module 'wa-sqlite-db/src/sqlite-constants.js' {
   export const SQLITE_OK: 0;
   export const SQLITE_ERROR: 1;
   export const SQLITE_INTERNAL: 2;
@@ -1354,8 +1354,8 @@ declare module 'wa-sqlite/src/sqlite-constants.js' {
 }
 
 /** @ignore */
-declare module 'wa-sqlite' {
-  export * from 'wa-sqlite/src/sqlite-constants.js';
+declare module 'wa-sqlite-db' {
+  export * from 'wa-sqlite-db/src/sqlite-constants.js';
 
   /**
    * Builds a Javascript API from the Emscripten module. This API is still
@@ -1373,20 +1373,20 @@ declare module 'wa-sqlite' {
 }
 
 /** @ignore */
-declare module 'wa-sqlite/dist/wa-sqlite.mjs' {
+declare module 'wa-sqlite-db/dist/wa-sqlite.mjs' {
   function ModuleFactory(config?: object): Promise<any>;
   export = ModuleFactory;
 }
 
 /** @ignore */
-declare module 'wa-sqlite/dist/wa-sqlite-async.mjs' {
+declare module 'wa-sqlite-db/dist/wa-sqlite-async.mjs' {
   function ModuleFactory(config?: object): Promise<any>;
   export = ModuleFactory;
 }
 
 /** @ignore */
-declare module 'wa-sqlite/src/VFS.js' {
-  export * from 'wa-sqlite/src/sqlite-constants.js';
+declare module 'wa-sqlite-db/src/VFS.js' {
+  export * from 'wa-sqlite-db/src/sqlite-constants.js';
 
   export class Base {
     mxPathName: number;
@@ -1501,7 +1501,7 @@ declare module 'wa-sqlite/src/VFS.js' {
 }
 
 /** @ignore */
-declare module 'wa-sqlite/src/examples/ArrayModule.js' {
+declare module 'wa-sqlite-db/src/examples/ArrayModule.js' {
   export class ArrayModule {
     /**
      * @param {SQLiteAPI} sqlite3
@@ -1610,8 +1610,8 @@ declare module 'wa-sqlite/src/examples/ArrayModule.js' {
 }
 
 /** @ignore */
-declare module 'wa-sqlite/src/examples/ArrayAsyncModule.js' {
-  import { ArrayModule } from "wa-sqlite/src/examples/ArrayModule.js";
+declare module 'wa-sqlite-db/src/examples/ArrayAsyncModule.js' {
+  import { ArrayModule } from "wa-sqlite-db/src/examples/ArrayModule.js";
   export class ArrayAsyncModule extends ArrayModule {
     /**
      * @param {function} f
@@ -1622,8 +1622,8 @@ declare module 'wa-sqlite/src/examples/ArrayAsyncModule.js' {
 }
 
 /** @ignore */
-declare module 'wa-sqlite/src/examples/IndexedDbVFS.js' {
-  import * as VFS from "wa-sqlite/src/VFS.js";
+declare module 'wa-sqlite-db/src/examples/IndexedDbVFS.js' {
+  import * as VFS from "wa-sqlite-db/src/VFS.js";
   export class IndexedDbVFS extends VFS.Base {
     /**
      * @param {string} idbName Name of IndexedDB database.
@@ -1675,8 +1675,8 @@ declare module 'wa-sqlite/src/examples/IndexedDbVFS.js' {
 }
 
 /** @ignore */
-declare module 'wa-sqlite/src/examples/MemoryVFS.js' {
-  import * as VFS from "wa-sqlite/src/VFS.js";
+declare module 'wa-sqlite-db/src/examples/MemoryVFS.js' {
+  import * as VFS from "wa-sqlite-db/src/VFS.js";
   export class MemoryVFS extends VFS.Base {
     name: string;
     mapNameToFile: Map<any, any>;
@@ -1685,14 +1685,14 @@ declare module 'wa-sqlite/src/examples/MemoryVFS.js' {
 }
 
 /** @ignore */
-declare module 'wa-sqlite/src/examples/MemoryAsyncVFS.js' {
-  import { MemoryVFS } from "wa-sqlite/src/examples/MemoryVFS.js";
+declare module 'wa-sqlite-db/src/examples/MemoryAsyncVFS.js' {
+  import { MemoryVFS } from "wa-sqlite-db/src/examples/MemoryVFS.js";
   export class MemoryAsyncVFS extends MemoryVFS {
   }
 }
 
 /** @ignore */
-declare module 'wa-sqlite/src/examples/tag.js' {
+declare module 'wa-sqlite-db/src/examples/tag.js' {
   /**
    * Template tag builder. This function creates a tag with an API and
    * database from the same module, then the tag can be used like this:
