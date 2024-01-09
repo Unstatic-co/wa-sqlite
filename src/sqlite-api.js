@@ -443,27 +443,42 @@ export function Factory(Module) {
   };
 
   sqlite3.run = async function (db, sql, params) {
-    for await (const stmt of sqlite3.statements(db, sql)) {
-      if (params) {
-        sqlite3.bind_collection(stmt, params)
+    const str = sqlite3.str_new(db, sql);
+    const sqlPointer = sqlite3.str_value(str)
+    const stmt = await sqlite3.prepare_v2(db, sqlPointer)
+    if (stmt) {
+      try {
+        if (params) {
+          sqlite3.bind_collection(stmt.stmt, params)
+        }
+        await sqlite3.step(stmt.stmt)
+      } finally {
+        await sqlite3.finalize(stmt.stmt);
       }
-      await sqlite3.step(stmt)
+      return SQLite.SQLITE_OK;
+    } else {
+      return SQLite.SQLITE_ERROR;
     }
-    return SQLite.SQLITE_OK;
   };
 
   sqlite3.execWithParams = async function (db, sql, params) {
     let columns = [];
-    const rows = []
-    for await (const stmt of sqlite3.statements(db, sql)) {
-      if (params) {
-        sqlite3.bind_collection(stmt, params)
-      }
-      while (await sqlite3.step(stmt) === SQLite.SQLITE_ROW) {
-        columns = columns.length === 0 ? sqlite3.column_names(stmt) : columns;
-        const row = sqlite3.row(stmt);
-        rows.push(row)
-        // await callback(row, columns);
+    const rows = [];
+    const str = sqlite3.str_new(db, sql);
+    const sqlPointer = sqlite3.str_value(str)
+    const stmt = await sqlite3.prepare_v2(db, sqlPointer)
+    if (stmt) {
+      try {
+        if (params) {
+          sqlite3.bind_collection(stmt.stmt, params)
+        }
+        while (await sqlite3.step(stmt.stmt) === SQLite.SQLITE_ROW){
+          columns = columns.length === 0 ? sqlite3.column_names(stmt.stmt) : columns;
+          const row = sqlite3.row(stmt.stmt);
+          rows.push(row)
+        }
+      } finally {
+        await sqlite3.finalize(stmt.stmt);
       }
     }
     return {
